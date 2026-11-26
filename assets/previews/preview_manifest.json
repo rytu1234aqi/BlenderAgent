@@ -1,0 +1,28 @@
+{
+  "status": "RENDERED",
+  "blender_version": "4.4.3",
+  "source": "E:\\code\\BlenderAgent\\assets\\teaching_rack.blend",
+  "views": [
+    {
+      "view": "overview",
+      "camera": "Preview_Overview",
+      "file": "overview.png"
+    },
+    {
+      "view": "front",
+      "camera": "Preview_Front",
+      "file": "front.png"
+    },
+    {
+      "view": "right",
+      "camera": "Preview_Right",
+      "file": "right.png"
+    },
+    {
+      "view": "cable",
+      "camera": "Preview_Cable",
+      "file": "cable.png"
+    }
+  ],
+  "note": "Fixed-camera previews are visual aids, not geometry validation evidence."
+}

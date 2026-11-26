@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+runs/
+.pytest_cache/
+*.blend1
+.blendguard_inspect_cache/
+
+# Internal planning, design & stage reports (local only)
+华为ICT大赛_Blender可信建模Agent差异化方案.md
+BlendGuard_首版完整实现方案.md
+前端仓库评估报告.md
+第一阶段验收报告.md
+第二三阶段验收报告.md
+第四阶段验收报告.md
+DeepSeek接入报告.md

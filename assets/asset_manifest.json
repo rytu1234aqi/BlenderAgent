@@ -1,0 +1,109 @@
+{
+  "asset_version": "1.0",
+  "title": "ICT Teaching Rack",
+  "source": "teaching_rack.blend",
+  "protected_objects": ["rack", "demo_floor"],
+  "previews": {
+    "directory": "previews",
+    "views": {
+      "overview": "overview.png",
+      "front": "front.png",
+      "right": "right.png",
+      "cable": "cable.png"
+    }
+  },
+  "license": "Original procedural geometry; no external assets",
+  "rack_unit_m": 0.04445,
+  "editable_roles": {
+    "server": [
+      "server_01",
+      "server_02",
+      "server_03",
+      "server_04"
+    ]
+  },
+  "aliases": {
+    "\u673a\u67dc": "rack",
+    "\u4ea4\u6362\u673a": "switch_01"
+  },
+  "cameras": {
+    "Preview_Overview": {
+      "location": [
+        3.2,
+        -4.4,
+        2.8
+      ],
+      "target": [
+        0,
+        0,
+        1.05
+      ],
+      "lens": 58
+    },
+    "Preview_Front": {
+      "location": [
+        0,
+        -4.0,
+        1.08
+      ],
+      "target": [
+        0,
+        0,
+        1.08
+      ],
+      "ortho_scale": 2.55
+    },
+    "Preview_Right": {
+      "location": [
+        4.0,
+        -0.02,
+        1.12
+      ],
+      "target": [
+        0,
+        0,
+        1.12
+      ],
+      "ortho_scale": 2.5
+    },
+    "Preview_Cable": {
+      "location": [
+        1.25,
+        -2.3,
+        1.75
+      ],
+      "target": [
+        0.02,
+        -0.28,
+        1.43
+      ],
+      "lens": 65
+    }
+  },
+  "connections": [
+    {
+      "cable": "cable_07",
+      "end": "end",
+      "port": "server_03_port",
+      "target": "server_03"
+    },
+    {
+      "cable": "cable_07",
+      "end": "start",
+      "port": "switch_01_port_02",
+      "target": "switch_01"
+    },
+    {
+      "cable": "cable_02",
+      "end": "end",
+      "port": "server_04_port",
+      "target": "server_04"
+    },
+    {
+      "cable": "cable_02",
+      "end": "start",
+      "port": "switch_01_port_03",
+      "target": "switch_01"
+    }
+  ]
+}
