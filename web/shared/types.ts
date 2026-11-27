@@ -191,3 +191,99 @@ export type ServerEvent =
 export interface ApiErrorBody {
   error?: PlanError;
 }
+
+// ── 自由建模（Studio）模式：Blender 主战场 + GLB 参考镜像 ─────────────────
+
+export type ChatEntryKind = "user" | "assistant" | "thinking" | "tool" | "question" | "system" | "error";
+
+export interface ChatEntry {
+  id: string;
+  ts: number;
+  kind: ChatEntryKind;
+  text: string;
+  streaming?: boolean;
+  toolName?: string;
+  args?: unknown;
+  status?: "running" | "ok" | "error";
+  result?: string;
+  options?: string[];
+  answer?: string;
+  durationMs?: number;
+}
+
+export interface ChatQuestion {
+  id: string;
+  question: string;
+  options?: string[];
+}
+
+export type ChatConnState = "unknown" | "connecting" | "connected" | "error";
+
+export interface ChatBaseline {
+  path: string;
+  sha256: string;
+  size: number;
+  at: number;
+}
+
+export interface ChatTurn {
+  turnId: string;
+  instruction: string;
+  startedAt: number;
+  baseline: ChatBaseline | null;
+  committed: boolean;
+}
+
+export interface BlenderInfo {
+  version: string;
+  file: string | null;
+  objects?: number;
+  scene?: string | null;
+}
+
+export interface ChatStatus {
+  /** Blender Bridge 插件（HTTP 9878）的连接状态 */
+  bridge: ChatConnState;
+  bridgeError?: string;
+  blender: ChatConnState;
+  blenderError?: string;
+  blenderInfo?: BlenderInfo;
+  deepseek: boolean;
+  model: string;
+  busy: boolean;
+  pendingQuestion?: ChatQuestion;
+  conversationId: string | null;
+  conversationBaseline: ChatBaseline | null;
+  turn: ChatTurn | null;
+}
+
+export interface ChatScene {
+  url: string;
+  version: number;
+  at: number;
+}
+
+export interface ChatSnapshot {
+  status: ChatStatus;
+  entries: ChatEntry[];
+  scene: ChatScene | null;
+}
+
+export type ChatEvent =
+  | { type: "snapshot"; snapshot: ChatSnapshot }
+  | { type: "entry"; entry: ChatEntry }
+  | { type: "delta"; id: string; text: string }
+  | { type: "patch"; id: string; patch: Partial<ChatEntry> }
+  | { type: "status"; status: ChatStatus }
+  | { type: "scene"; scene: ChatScene | null }
+  | { type: "clear" };
+
+export interface ChatTurnSummary {
+  turnId: string;
+  instruction: string;
+  startedAt: number;
+  committed: boolean;
+  steps: number;
+  baselineSha256: string | null;
+  journalPath: string | null;
+}
