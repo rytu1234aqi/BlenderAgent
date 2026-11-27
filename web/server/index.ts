@@ -9,6 +9,9 @@ import { WorkbenchHub } from "./events";
 import { asWebError, WebError } from "./errors";
 import { createSecurityMiddleware, notFound } from "./security";
 import { WorkbenchSession } from "./session";
+import { loadChatEnvFiles, resolveChatConfig } from "./chat/env";
+import { connectChatBridge, createChatRuntime, registerChatRoutes } from "./chat/router";
+
 
 function asyncRoute(
   handler: (req: Request, res: Response) => Promise<void>,
@@ -88,6 +91,8 @@ export function createApplication(config: AppConfig = defaultConfig, client = ne
     res.setHeader("Cache-Control", "no-cache");
     res.sendFile(await resolveAssetPreview(client, req.params.assetId, req.params.view));
   }));
+  const chat = createChatRuntime(resolveChatConfig());
+  registerChatRoutes(app, chat);
   app.use("/api", notFound);
 
   const hasDist = fs.existsSync(path.join(config.distDir, "index.html"));
@@ -115,18 +120,24 @@ export function createApplication(config: AppConfig = defaultConfig, client = ne
       error: { code: failure.code, message: failure.message, details: failure.details },
     });
   });
-  return { app, client, hub, session };
+  return { app, client, hub, session, chat };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
-  const { app, hub, session } = createApplication();
+  loadChatEnvFiles();
+  const { app, hub, session, chat } = createApplication();
   await session.initialize();
   const server = app.listen(defaultConfig.port, "127.0.0.1", () => {
     console.log(`[blendguard] http://127.0.0.1:${defaultConfig.port}`);
     console.log(`[blendguard] planner=${defaultConfig.planner}, blender=${defaultConfig.blender ?? "auto"}`);
+    console.log(`[blendguard] studio: bridge=${chat.config.bridgeUrl}, blender=${chat.config.blenderExe}, deepseek=${chat.connection.apiKey ? "on" : "off"}`);
   });
   server.requestTimeout = defaultConfig.processTimeoutMs * 2 + 60_000;
-  const heartbeat = setInterval(() => hub.heartbeat(), 20_000);
+  void connectChatBridge(chat);
+  const heartbeat = setInterval(() => {
+    hub.heartbeat();
+    chat.hub.heartbeat();
+  }, 20_000);
   heartbeat.unref();
   const shutdown = () => {
     clearInterval(heartbeat);

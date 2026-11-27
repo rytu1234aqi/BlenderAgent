@@ -9,6 +9,11 @@ export interface SceneStats {
   triangles: number;
 }
 
+export interface PickInfo {
+  name: string;
+  object: THREE.Object3D;
+}
+
 function isPresentationObject(object: THREE.Object3D): boolean {
   return object.name === "demo_floor" || object.name.startsWith("Preview_");
 }
@@ -39,10 +44,42 @@ export class SceneViewer {
   private disposed = false;
   private wireframe = false;
   private loadSequence = 0;
+  private readonly raycast = new THREE.Raycaster();
+  private readonly pointer = new THREE.Vector2();
+  private helper: THREE.BoxHelper | null = null;
+  private picking = false;
+  private armed: { x: number; y: number } | null = null;
+  private readonly onPointerDown = (event: PointerEvent): void => {
+    this.armed = { x: event.clientX, y: event.clientY };
+  };
+  private readonly onPointerUp = (event: PointerEvent): void => {
+    const armed = this.armed;
+    this.armed = null;
+    if (!this.picking || !this.root || !armed) return;
+    if (Math.hypot(event.clientX - armed.x, event.clientY - armed.y) > 4) return;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    this.raycast.setFromCamera(this.pointer, this.camera);
+    const meshes: THREE.Mesh[] = [];
+    this.root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (mesh.isMesh && mesh.visible && !isPresentationObject(mesh)) meshes.push(mesh);
+    });
+    const hits = this.raycast.intersectObjects(meshes, false);
+    const hit = hits.find((item) => item.object.visible);
+    if (!hit) {
+      this.onPick?.(null);
+      return;
+    }
+    const object = hit.object;
+    this.onPick?.({ name: displayName(object), object });
+  };
 
   onStats?: (stats: SceneStats) => void;
   onLoading?: (loading: boolean) => void;
   onError?: (message: string) => void;
+  onPick?: (info: PickInfo | null) => void;
 
   constructor(private readonly container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -97,6 +134,8 @@ export class SceneViewer {
     gridMaterial.transparent = true;
     gridMaterial.opacity = 0.55;
     this.scene.add(grid);
+    this.renderer.domElement.addEventListener("pointerdown", this.onPointerDown);
+    window.addEventListener("pointerup", this.onPointerUp);
 
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(container);
@@ -182,17 +221,54 @@ export class SceneViewer {
     });
   }
 
+  setPicking(on: boolean): void {
+    this.picking = on;
+    this.renderer.domElement.style.cursor = on ? "pointer" : "grab";
+  }
+
+  /** 选中参考镜像里的对象（显示包围盒高亮），传 null 清除选择。 */
+  setSelection(object: THREE.Object3D | null): void {
+    if (!object) {
+      if (this.helper) this.helper.visible = false;
+      return;
+    }
+    if (!this.helper) {
+      this.helper = new THREE.BoxHelper(new THREE.Object3D(), 0x8bd5ff);
+      this.helper.visible = false;
+      this.scene.add(this.helper);
+    }
+    this.helper.setFromObject(object);
+    this.helper.visible = true;
+  }
+
   dispose(): void {
     this.disposed = true;
     this.loadSequence += 1;
     cancelAnimationFrame(this.raf);
+    this.renderer.domElement.removeEventListener("pointerdown", this.onPointerDown);
+    window.removeEventListener("pointerup", this.onPointerUp);
     this.observer.disconnect();
     this.controls.dispose();
+    if (this.helper) {
+      this.scene.remove(this.helper);
+      this.helper.geometry.dispose();
+      (this.helper.material as THREE.Material).dispose();
+    }
     if (this.root) disposeObject(this.root);
     this.environmentTarget.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
+}
+
+function displayName(object: THREE.Object3D): string {
+  let current: THREE.Object3D | null = object;
+  let fallback = object.name || "未命名对象";
+  while (current) {
+    if (current.name) fallback = current.name;
+    current = current.parent;
+  }
+  return fallback;
 }
 
 function computeStats(root: THREE.Object3D): SceneStats {

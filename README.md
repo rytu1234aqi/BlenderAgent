@@ -9,6 +9,24 @@ BlendGuard 是一个面向已有 Blender 硬表面工程的可信局部编辑原
 - [Agent 与 Web 使用示例](examples/agent_demo.md)
 - [Web 工作台说明](web/README.md)
 
+## 使用前：先配好 `.env` 里的两项
+
+后端启动时会自动读取 `BlenderAgent-main/.env`（再用仓库根 `.env` 补缺；空值视为未设置）。**每次使用前先确认下面两项，改完要重启后端才生效**（本 README 只作说明，具体请直接在 `.env` 里填）：
+
+1. **`DEEPSEEK_API_KEY`**：填你自己的 DeepSeek Key；为空时页面显示「DeepSeek 未配置」，Studio 对话与 DeepSeek 规划都不可用。
+2. **`BLENDER_EXECUTABLE`**：Blender 可执行文件的**完整路径**。这不是 demo 自动扫描出来的，后端不会去搜索其它安装目录：
+   - 默认可直接用 `D:\Blender\blender.exe`（存在时）；
+   - 装在别处（如 `C:\Program Files\Blender Foundation\Blender 5.3\blender.exe`）就必须写这一项，否则脚本执行会在「启动 Blender」一步报路径不存在。
+
+`.env` 中这两项应写成（值换成你自己的）：
+
+```dotenv
+DEEPSEEK_API_KEY=sk-你的-key
+BLENDER_EXECUTABLE=D:\Blender\blender.exe
+```
+
+其余可选变量（Bridge 地址、脚本超时、运行目录等）见 [web/STUDIO.md](web/STUDIO.md) 与 [web/README.md](web/README.md) 的配置表。
+
 ## 当前已实现
 
 ### 确定性执行核心
@@ -265,3 +283,8 @@ web/
 ├── README.md            # 启动、配置与测试
 └── NOTICE.md            # 上游来源和许可证限制
 ```
+## Studio 模式（Blender 主战场 + 参考镜像 + 事务审计）
+
+在「可信编辑」之外，工作台提供 Studio 模式：Agent 每步写 Blender 脚本，由无头 Blender 在隔离工作副本中执行；网页视口显示导出的 GLB 参考镜像。每回合开始自动写审计点，采纳时通过 `blender_bridge` 插件（本机 HTTP 9878，无需 MCP）把审阅过的 `output.blend` 推回真实 Blender 会话，不同意可一键回退。详见 [`web/STUDIO.md`](web/STUDIO.md)。
+
+桥接插件源码在 `blender_bridge/`，首次使用需复制到 Blender addons 目录并在偏好设置中启用（步骤见 STUDIO.md）。

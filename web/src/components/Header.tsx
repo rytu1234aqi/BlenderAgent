@@ -1,4 +1,4 @@
-import { Plus, ShieldCheck } from "lucide-react";
+import { PenTool, Plus, ShieldCheck } from "lucide-react";
 import type { WorkStatus } from "../../shared/types";
 
 function StateDot({ state }: { state: "ok" | "warn" | "error" }) {
@@ -6,7 +6,17 @@ function StateDot({ state }: { state: "ok" | "warn" | "error" }) {
   return <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${color}`} />;
 }
 
-export function Header({ status, connected, onReset }: { status: WorkStatus; connected: boolean; onReset: () => void }) {
+export function Header({
+  status,
+  connected,
+  onReset,
+  onSwitchStudio,
+}: {
+  status: WorkStatus;
+  connected: boolean;
+  onReset: () => void;
+  onSwitchStudio?: () => void;
+}) {
   const blenderState = status.blender === "connected" ? "ok" : status.blender === "error" ? "error" : "warn";
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-[#2a3640] bg-[#10151b] px-4">
@@ -36,6 +46,14 @@ export function Header({ status, connected, onReset }: { status: WorkStatus; con
           <StateDot state={connected ? "ok" : "error"} />
           <span className="hidden md:inline">{connected ? "本地服务已连接" : "正在重连"}</span>
         </span>
+        <button
+          type="button"
+          onClick={onSwitchStudio}
+          className="flex h-8 items-center gap-1.5 rounded border border-[#34434e] px-2.5 text-[11.5px] text-[#c3d0d6] transition hover:border-[#4fc3b1]/50 hover:text-[#edf3f5]"
+        >
+          <PenTool className="h-3.5 w-3.5" />
+          Studio 建模
+        </button>
         <button
           type="button"
           onClick={onReset}

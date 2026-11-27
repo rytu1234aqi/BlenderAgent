@@ -17,3 +17,22 @@ BlendGuard_首版完整实现方案.md
 第二三阶段验收报告.md
 第四阶段验收报告.md
 DeepSeek接入报告.md
+
+# local browser-debug artifacts
+.edge-profile/
+*.shot.png
+web/.edge-profile/
+
+# dependencies & local secrets
+node_modules/
+web/node_modules/
+.env
+web/.env
+
+# temporary test dirs
+tmp*/
+.tmp-tests/
+
+# 单文件前端构建产物随仓库分发（其余 dist 仍忽略）
+!web/dist/
+!web/dist/index.html

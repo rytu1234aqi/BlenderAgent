@@ -78,7 +78,7 @@ python web\start_deepseek.py
 | --- | --- | --- |
 | `PORT` | `8787` | 生产 HTTP 端口 |
 | `PYTHON_EXECUTABLE` | `python` | 主机 Python |
-| `BLENDER_EXECUTABLE` | 自动检测；Windows 可检测 `D:\Blender\blender.exe` | Blender 程序 |
+| `BLENDER_EXECUTABLE` | 未设置时仅检查 Windows 的 `D:\Blender\blender.exe`；装在别处必须设置 | Blender 程序完整路径 |
 | `BLENDGUARD_PLANNER` | `deepseek` | `deepseek`、`claude` 或显式离线 `deterministic`；空值和未知值会拒绝启动 |
 | `DEEPSEEK_API_KEY` | 无 | DeepSeek 密钥，只从服务进程环境读取，不进入前端或报告 |
 | `DEEPSEEK_MODEL` | `deepseek-flash` | DeepSeek 模型；优先于通用 `BLENDGUARD_MODEL` |
